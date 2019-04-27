@@ -1,28 +1,22 @@
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 from apps import apps
 
-#GOOGLE SHEETS - connection 
-config = 'ads-dashboard-09a9acd8430f.json'
-scope = ['https://spreadsheets.google.com/feeds',
-         'https://www.googleapis.com/auth/drive']
+#GOOGLE SHEETS - Fliter apps/metric
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name(config, scope)
-gc = gspread.authorize(credentials)
-wks = gc.open('(YTD) Apps Run Rate').sheet1
+class Gsheets: 
+    def __init__(self, wks): 
+        self.wks = wks
 
-#Fliter apps/metric
-def addRowToSheets(data):
-    wks.append_row(data, value_input_option='USER_ENTERED')
+    def appendFilterApps(self, data):
+        for index in data['connections']:
+            for app in apps:
+                if index['app'] == app:
+                    rows = self.filterDataRows(index)
+                    self.addRowToSheets(rows)
+        print('EVENT: Complete')
 
-def filterDataRows(index) :
-    row = [index['date'], index['app'], index['impressions'], index['ad_revenue'], index['dau'], index['clicks'],index['conversions']]
-    return row
+    def addRowToSheets(self, data):
+        self.wks.append_row(data, value_input_option='USER_ENTERED')
 
-def appendFilterApps(data):
-    for index in data['connections']:
-        for app in apps:
-            if index['app'] == app:
-                rows = filterDataRows(index)
-                addRowToSheets(rows)
-    print('Complete')
+    def filterDataRows(self, index) :
+        row = [index['date'], index['app'], index['impressions'], index['ad_revenue'], index['dau'], index['clicks'],index['conversions']]
+        return row

@@ -1,54 +1,42 @@
 #%%
-import requests
-import pandas as pd
-import json
-from credentials import creds
+from dataRequest import DataRequest
 from apps import apps
-
-libringToken = creds['libring']
-
-storeData = []
-
-def getLibringData(startDate, endDate): 
-    url = 'https://api.libring.com/v2/reporting/get'
-    headers = {
-        'Authorization': 'Token ' + libringToken,
-        'content-type': 'application/json'
-    }
-    queryString = {
-        'start_date': startDate,
-        'end_date': endDate,
-        'group_by': 'date,app'
-    }
-
-    payload = ''
-
-    response = requests.request('GET', url, params = queryString, headers = headers, data = payload)
-
-    data = response.json()
-
-    print('GETTING DATA:')
-    print(data)
-    filterLibringData(data)
-
-    return data
-
-
-def filterLibringData(rawdata):
-    for index in rawdata['connections']:
-        for app in apps: 
-            if index['app'] == app:
-                storeData.append(index)
-    print('Data filtered...')
-
-data = getLibringData('2019-04-16','2019-04-16')
+from graph import Graph
+from google import Gsheets
+import pandas as pd 
+import matplotlib as plt
 
 #%%
-mainDataFrame = pd.DataFrame(storeData)
+rawData = []
+filterData = []
+sheetsData = []
+
+#Getting Data
+dr = DataRequest(rawData, filterData)
+dr.getLibringData('2019-04-01', '2019-04-05')
+googleData = dr.getSheetsData(sheetsData)
 
 #%%
-mainDataFrame.head()
-#%%
-mh = mainDataFrame[mainDataFrame['app'] == 'Cookie Jam']
-mh.head()
+gDF = pd.DataFrame(googleData)
+gDF.index = gDF['Date']
 
+#%%
+def totalDailySum(rawDataFrame, revString):
+    tempDf = rawDataFrame[revString]
+    tempDf.index = pd.to_datetime(tempDf.index)
+    total = tempDf.resample('d').sum()
+    return total
+
+# def forcastDailySum(rawDataFrame, num):
+#     total = totalDailySum(rawDataFrame)
+#     count = len(total)
+#     average = total / count
+
+#%%
+total = totalDailySum(gDF, 'Ad Revenue ($)')
+
+#%%
+total.head()
+
+grh = Graph()
+grh.plotAppsLineGraph(gDF)
