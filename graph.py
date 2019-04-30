@@ -2,39 +2,45 @@
 import pandas as pd
 from apps import apps
 import matplotlib.pyplot as plt
+import seaborn as sb
 
+#%%
 class Graph:
-    def plotAppsLineGraph(self, rawDataFrame, revString, appString, total = None):
 
-        for app in apps: 
-            appDF = rawDataFrame[rawDataFrame[appString] == app]
-            plt.plot(appDF.index, appDF[revString], label = app, linewidth = 3.3)
+    def appendDailyGoal(self, rawDF, dailyGoalNum):
+        goalNum = dailyGoalNum
+        tempArray = []
 
-        if total != None:
-            plt.plot(appDF.index, total(rawDataFrame[revString]), label = 'Total Sum', linewidth = 3.3)
+        for x in range(len(rawDF)):
+            tempArray.append(goalNum)
+            x += 1
         
-        plt.title('Ad Revenue')
-        plt.xlabel('Date')
-        plt.ylabel('Revenue')
-        daterange = ['2019-04-01', '2019-04-05','2019-04-10', '2019-04-15','2019-04-20', '20190-04-23']
-        plt.xticks(daterange)
+        return tempArray
+
+    def plotRevGoal(self, rawData, dailyGoal, title, xLabel, yLabel): 
+
+        counter = appendDailyGoal(rawData.index, dailyGoal)
+        plt.plot(rawData.index, counter, label = 'Daily Goal', linewidth = 1.5, linestyle = '--')
+        plt.plot(rawData.index, rawData['total'], label = 'Total Revenue', linewidth = 1.5)
+
+        plt.title(title)
+        plt.xlabel(xLabel)
+        plt.ylabel(yLabel)
         plt.legend()
-        plt.savefig('Ad_Revenue.png')
+        plt.show()
+
+    def plotAppsLineGraph(self, rawDataFrame, title, xLabel, yLabel):
+        for app in apps: 
+            appDF = rawDataFrame[rawDataFrame['app'] == app]
+            plt.plot(appDF.index, appDF['ad_revenue'], label = app, linewidth = 1.5)
+
+        plt.title(title)
+        plt.xlabel(xLabel)
+        plt.ylabel(yLabel)
+        plt.legend()
         plt.show()
 
     def plotAppsPieGraph(self, rawDataFrame):
-
-        for app in apps: 
-            appDF = rawDataFrame[rawDataFrame['app'] == app]
-            plt.plot(appDF.index, appDF['ad_revenue'], label = app, linewidth = 3.3)
         
-        # plt.plot(appDF.index, totalDailySum(rawDataFrame), label = 'Total Sum', linewidth = 3.3)
-        plt.title('Ad Revenue')
-        plt.xlabel('Date')
-        plt.ylabel('Revenue')
-        daterange = ['2019-04-01', '2019-04-05','2019-04-10', '2019-04-15','2019-04-20', '20190-04-23']
-        plt.xticks(daterange)
-        plt.legend()
-        plt.savefig('Ad_Revenue.png')
-        plt.show()
+
 
