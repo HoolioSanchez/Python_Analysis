@@ -61,3 +61,40 @@ aprilDAU.head()
 #%%
 aprilARPDAU = aprilDAU[[appCol, 'ARPDAU']]
 graph.plotAppsLineGraph(aprilARPDAU, 'ARPDAU', 'Date', 'ARPDAU','ARPDAU', appCol)
+
+#%%
+mdf = pd.DataFrame(googleData)
+mdf = mdf.set_index(['Date', appCol])
+
+testDF = mdf
+testDF = testDF.loc[slice(None), 'DAU']
+
+#%%
+def getARPDAU(dataFrame, appList, revList, breakDownParameter):
+    results = pd.DataFrame()
+    totalRev = dataFrame[revList].resample(breakDownParameter).mean()
+    avgDAU = dataFrame['DAU'].resample(breakDownParameter).mean()
+    arpdau = totalRev/avgDAU
+
+    results['ARPDAU'] = arpdau
+    return results
+
+#%%
+def getGrowthRate(presentSet, perviousSet):
+    # (present  - pervious) / pervious X 100 
+    results = ((presentSet - perviousSet) / perviousSet) * 100
+    return results
+
+#%%
+def getAllARPDAU(dataframe, appList, revList, breakdown):
+    results = pd.DataFrame()
+    appendDF = pd.DataFrame()
+
+    for app in apps: 
+        tempDF = dataframe[dataframe[appList] == app]
+        arpdau = getARPDAU(tempDF, appList, revList, breakdown)
+        appendDF = arpdau
+        appendDF['App Name'] = app
+        results = results.append(appendDF)
+
+    return results
